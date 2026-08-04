@@ -64,7 +64,7 @@ export default function Flow() {
       });
       setSaving(false);
       setSaved(true);
-      setTimeout(() => navigate('/'), 1200);
+      setTimeout(() => navigate('/', { replace: true }), 1200);
     } else {
       setCurrent(c => c + 1);
     }

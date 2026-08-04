@@ -29,7 +29,7 @@ export default function Onboarding() {
     }
     if (isLast) {
       await updateSettings({ onboardingComplete: true });
-      navigate('/');
+      navigate('/', { replace: true });
     } else {
       setStep(s => s + 1);
     }

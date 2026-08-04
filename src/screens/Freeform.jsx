@@ -14,20 +14,20 @@ export default function Freeform() {
   useEffect(() => { taRef.current?.focus(); }, []);
 
   const handleSave = async () => {
-    if (!text.trim()) { navigate('/'); return; }
+    if (!text.trim()) { navigate('/', {replace: true }); return; }
     setSaving(true);
     const now = Date.now();
     await db.entries.put({
       id: uuid(), date: todayStr(), type: 'freeform',
       answers: [], freeformText: text.trim(), createdAt: now, updatedAt: now
     });
-    navigate('/');
+    navigate('/', { replace: true });
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <header className="pt-safe px-5 pb-2 flex items-center justify-between">
-        <button onClick={() => navigate('/')} className="btn-ghost rounded-full w-9 h-9 flex items-center justify-center -ml-1">
+        <button onClick={() => navigate('/', {replace: true })} className="btn-ghost rounded-full w-9 h-9 flex items-center justify-center -ml-1">
           <X className="w-5 h-5" strokeWidth={1.5} />
         </button>
         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
