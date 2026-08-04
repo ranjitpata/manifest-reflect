@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext';
 import { db } from '../db';
 import Toggle from '../components/Toggle';
 import { todayStr, isIOS, isStandalone, fmtDate, fmtTime } from '../utils/helpers';
-import html2pdf from 'html2pdf.js';
+import { jsPDF } from 'jspdf';
 
 export default function Settings() {
   const { settings, updateSettings } = useApp();
@@ -27,87 +27,133 @@ export default function Settings() {
     setIsGeneratingPdf(true);
     try {
       const allEntries = await db.entries.orderBy('createdAt').reverse().toArray();
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
       
-      // Group entries by date, and FILTER OUT empty answers
-      const grouped = allEntries.reduce((acc, e) => {
-        if (e.type === 'freeform') {
-          if (e.freeformText.trim()) {
-            if (!acc[e.date]) acc[e.date] = [];
-            acc[e.date].push(e);
-          }
-        } else {
-          const validAnswers = e.answers.filter(a => a.response && a.response.trim());
-          if (validAnswers.length > 0) {
-            if (!acc[e.date]) acc[e.date] = [];
-            acc[e.date].push({ ...e, answers: validAnswers });
-          }
+      // Page dimensions
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      let y = margin;
+
+      // Helper to check page breaks
+      const checkPageBreak = (neededSpace) => {
+        if (y + neededSpace > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
         }
-        return acc;
-      }, {});
+      };
 
-      const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+      // Title
+      doc.setFont('times', 'bold');
+      doc.setFontSize(24);
+      doc.text('Manifest & Reflect Journal', margin, y);
+      y += 10;
 
-      // Build HTML string for PDF
-      let html = `
-        <div style="font-family: 'Inter', sans-serif; color: #2A2420; background-color: #ffffff; padding: 24px; width: 800px;">
-          <h1 style="font-family: 'Fraunces', serif; font-size: 28px; border-bottom: 1px solid #E5DAC9; padding-bottom: 12px; margin-bottom: 24px;">Manifest & Reflect Journal</h1>
-      `;
+      // Line break under title
+      doc.setDrawColor(220, 210, 200);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 12;
 
-      if (sortedDates.length === 0) {
-        html += `<p>No entries yet.</p>`;
+      if (allEntries.length === 0) {
+        doc.setFont('times', 'normal');
+        doc.setFontSize(14);
+        doc.text('No entries yet.', margin, y);
       } else {
+        // Group by date
+        const grouped = allEntries.reduce((acc, e) => {
+          if (!acc[e.date]) acc[e.date] = [];
+          acc[e.date].push(e);
+          return acc;
+        }, {});
+
+        const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
         for (const date of sortedDates) {
-          html += `<div style="margin-bottom: 32px;">`;
-          html += `<h2 style="font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 12px;">${fmtDate(date)}</h2>`;
+          // Filter out empty answers for the whole day
+          const dayEntries = grouped[date]
+            .map(e => {
+              if (e.type === 'freeform') {
+                return e.freeformText.trim() ? e : null;
+              }
+              const validAnswers = e.answers.filter(a => a.response && a.response.trim());
+              return validAnswers.length > 0 ? { ...e, answers: validAnswers } : null;
+            })
+            .filter(Boolean);
+
+          if (dayEntries.length === 0) continue;
+
+          checkPageBreak(15);
           
-          const dayEntries = grouped[date].sort((a, b) => {
+          // Date Header
+          doc.setFont('times', 'bold');
+          doc.setFontSize(18);
+          doc.text(fmtDate(date), margin, y);
+          y += 8;
+
+          // Sort entries: Morning, Evening, Freeform
+          dayEntries.sort((a, b) => {
             const order = { morning: 1, evening: 2, freeform: 3 };
             return order[a.type] - order[b.type] || a.createdAt - b.createdAt;
           });
 
           for (const entry of dayEntries) {
-            html += `<div style="padding-left: 12px; border-left: 2px solid #E5DAC9; margin-bottom: 20px;">`;
-            const typeLabel = entry.type === 'morning' ? 'Morning Intention' : entry.type === 'evening' ? 'Evening Reflection' : 'Freeform Note';
-            html += `<p style="font-size: 10px; text-transform: uppercase; color: #7A6F65; margin-bottom: 6px;">${typeLabel} · ${fmtTime(entry.createdAt)}</p>`;
+            checkPageBreak(20);
             
+            // Type & Time Label
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(120, 110, 100); // Muted gray
+            const typeLabel = entry.type === 'morning' ? 'MORNING INTENTION' : entry.type === 'evening' ? 'EVENING REFLECTION' : 'FREEFORM NOTE';
+            doc.text(`${typeLabel}  ·  ${fmtTime(entry.createdAt)}`, margin, y);
+            y += 6;
+
             if (entry.type === 'freeform') {
-              html += `<p style="font-family: 'Fraunces', serif; white-space: pre-wrap; margin: 0; line-height: 1.5;">${entry.freeformText}</p>`;
+              doc.setFont('times', 'normal');
+              doc.setFontSize(13);
+              doc.setTextColor(40, 35, 30); // Dark text
+              const textLines = doc.splitTextToSize(entry.freeformText, maxWidth);
+              for (const line of textLines) {
+                checkPageBreak(6);
+                doc.text(line, margin, y);
+                y += 6;
+              }
             } else {
               for (const a of entry.answers) {
-                html += `<div style="margin-bottom: 10px;">`;
-                html += `<p style="font-size: 11px; font-style: italic; color: #7A6F65; margin: 0 0 4px 0;">${a.promptText}</p>`;
-                html += `<p style="font-family: 'Fraunces', serif; white-space: pre-wrap; margin: 0; line-height: 1.5;">${a.response}</p>`;
-                html += `</div>`;
+                checkPageBreak(12);
+                
+                // Prompt Text
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(10);
+                doc.setTextColor(120, 110, 100);
+                const promptLines = doc.splitTextToSize(a.promptText, maxWidth);
+                for (const line of promptLines) {
+                  checkPageBreak(5);
+                  doc.text(line, margin, y);
+                  y += 5;
+                }
+                y += 2;
+
+                // Response Text
+                doc.setFont('times', 'normal');
+                doc.setFontSize(13);
+                doc.setTextColor(40, 35, 30);
+                const responseLines = doc.splitTextToSize(a.response, maxWidth);
+                for (const line of responseLines) {
+                  checkPageBreak(6);
+                  doc.text(line, margin, y);
+                  y += 6;
+                }
+                y += 4;
               }
             }
-            html += `</div>`;
+            y += 6; // Space between entries
           }
-          html += `</div>`;
+          y += 4; // Space between days
         }
       }
-      html += `</div>`;
 
-      // Create a hidden container to render the HTML safely
-      const container = document.createElement('div');
-      container.style.position = 'fixed';
-      container.style.top = '0';
-      container.style.left = '0';
-      container.style.zIndex = '-1';
-      container.style.opacity = '0';
-      container.style.pointerEvents = 'none';
-      container.innerHTML = html;
-      document.body.appendChild(container);
-
-      const opt = {
-        margin: 10,
-        filename: `journal-${todayStr()}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      await html2pdf().set(opt).from(container).save();
-      document.body.removeChild(container);
+      doc.save(`journal-${todayStr()}.pdf`);
     } catch (err) {
       console.error("PDF Error:", err);
     } finally {
