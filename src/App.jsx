@@ -12,6 +12,7 @@ import History from './screens/History';
 import EntryDetail from './screens/EntryDetail';
 import Settings from './screens/Settings';
 import ManagePrompts from './screens/ManagePrompts';
+import PrintJournal from './screens/PrintJournal';
 
 export default function App() {
   const { ready, settings } = useApp();
@@ -39,7 +40,7 @@ export default function App() {
         <Route path="/freeform" element={<Freeform />} />
         <Route path="/entry/:id" element={<EntryDetail />} />
         <Route path="/manage/:session" element={<ManagePrompts />} />
-        
+        <Route path="/print" element={<PrintJournal />} />
         {/* Routes with Bottom Nav */}
         <Route path="/" element={<Layout><Home /></Layout>} />
         <Route path="/history" element={<Layout><History /></Layout>} />

@@ -1,13 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { db } from '../db';
-import { Sun, Moon, Download, ArrowRight, Bell } from 'lucide-react';
+import { Sun, Moon, Download, ArrowRight, Bell, FileText } from 'lucide-react';
 import Toggle from '../components/Toggle';
 import { todayStr, isIOS, isStandalone } from '../utils/helpers';
 
 export default function Settings() {
   const { settings, updateSettings } = useApp();
-
+  const navigate = useNavigate();
   if (!settings) return null;
 
   const handleExport = async () => {
@@ -69,10 +69,21 @@ export default function Settings() {
         </div>
       </Section>
 
-      <Section title="Your data">
+      {/* <Section title="Your data">
         <button onClick={handleExport} className="btn-ghost w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2">
           <Download className="w-4 h-4" strokeWidth={1.5} /> Export to file
         </button>
+      </Section> */}
+            <Section title="Your data">
+        <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>Everything lives only on this device. Export a copy for safekeeping.</p>
+        <div className="flex gap-2">
+          <button onClick={handleExport} className="btn-ghost flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+            <Download className="w-4 h-4" strokeWidth={1.5} /> Backup (JSON)
+          </button>
+          <button onClick={() => navigate('/print')} className="btn-primary flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+            <FileText className="w-4 h-4" strokeWidth={1.5} /> Export Journal (PDF)
+          </button>
+        </div>
       </Section>
     </div>
   );

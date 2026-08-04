@@ -119,3 +119,29 @@ textarea { resize: none; }
 @media (prefers-reduced-motion: reduce) {
   .fade-up, .slide-in, .breathe { animation: none !important; }
 }
+
+/* Print Styles */
+@media print {
+  body { 
+    background: white !important; 
+  }
+  .grain::before { 
+    display: none !important; 
+  }
+  
+  /* Hide the entire React app */
+  #root {
+    display: none !important;
+  }
+  
+  /* Reveal and format the print container */
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    display: block !important;
+  }
+}
