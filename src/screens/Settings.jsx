@@ -23,7 +23,7 @@ export default function Settings() {
     URL.revokeObjectURL(url);
   };
 
-  const handleDownloadPDF = async () => {
+   const handleDownloadPDF = async () => {
     setIsGeneratingPdf(true);
     try {
       const allEntries = await db.entries.orderBy('createdAt').reverse().toArray();
@@ -49,7 +49,7 @@ export default function Settings() {
 
       // Build HTML string for PDF
       let html = `
-        <div style="font-family: 'Inter', sans-serif; color: #2A2420; padding: 24px;">
+        <div style="font-family: 'Inter', sans-serif; color: #2A2420; background-color: #ffffff; padding: 24px; width: 800px;">
           <h1 style="font-family: 'Fraunces', serif; font-size: 28px; border-bottom: 1px solid #E5DAC9; padding-bottom: 12px; margin-bottom: 24px;">Manifest & Reflect Journal</h1>
       `;
 
@@ -57,7 +57,7 @@ export default function Settings() {
         html += `<p>No entries yet.</p>`;
       } else {
         for (const date of sortedDates) {
-          html += `<div style="margin-bottom: 32px; page-break-inside: avoid;">`;
+          html += `<div style="margin-bottom: 32px;">`;
           html += `<h2 style="font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 12px;">${fmtDate(date)}</h2>`;
           
           const dayEntries = grouped[date].sort((a, b) => {
@@ -87,10 +87,14 @@ export default function Settings() {
       }
       html += `</div>`;
 
-      // Create a hidden container to render the HTML
+      // Create a hidden container to render the HTML safely
       const container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.zIndex = '-1';
+      container.style.opacity = '0';
+      container.style.pointerEvents = 'none';
       container.innerHTML = html;
       document.body.appendChild(container);
 
@@ -98,7 +102,7 @@ export default function Settings() {
         margin: 10,
         filename: `journal-${todayStr()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 

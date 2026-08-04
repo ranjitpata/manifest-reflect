@@ -40,7 +40,7 @@ export default function App() {
         <Route path="/freeform" element={<Freeform />} />
         <Route path="/entry/:id" element={<EntryDetail />} />
         <Route path="/manage/:session" element={<ManagePrompts />} />
-        <Route path="/settings" element={<Settings />} />
+        
         {/* Routes with Bottom Nav */}
         <Route path="/" element={<Layout><Home /></Layout>} />
         <Route path="/history" element={<Layout><History /></Layout>} />
