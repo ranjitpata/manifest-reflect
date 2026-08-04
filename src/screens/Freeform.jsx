@@ -40,6 +40,8 @@ export default function Freeform() {
         <h2 className="text-display text-[26px] mb-6 leading-snug">Whatever's here.</h2>
         <textarea
           ref={taRef}
+          id="freeform-text"
+          name="freeform-text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Write whatever arrives…"

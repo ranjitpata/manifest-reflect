@@ -89,7 +89,7 @@ const TimeRow = ({ label, icon: Icon, value, onChange }) => (
   <div className="flex items-center gap-3">
     <Icon className="w-4 h-4" strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
     <span className="flex-1 text-sm">{label}</span>
-    <input type="time" value={value} onChange={e => onChange(e.target.value)} className="field px-3 py-1.5 rounded-lg text-sm" />
+    <input type="time" id={`time-${label}`} name={`time-${label}`} value={value} onChange={e => onChange(e.target.value)} className="field px-3 py-1.5 rounded-lg text-sm" />
   </div>
 );
 

@@ -90,7 +90,7 @@ export default function ManagePrompts() {
           <div key={p.id} className="p-4 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid ' + (p.isLoopCloser ? 'var(--accent-soft)' : 'var(--border-soft)') }}>
             {editingId === p.id ? (
               <div>
-                <textarea autoFocus value={editText} onChange={e => setEditText(e.target.value)} className="field w-full p-3 rounded-xl text-sm min-h-[80px] mb-2 serif-body" />
+                <textarea autoFocus id={`edit-${p.id}`} name={`edit-${p.id}`} value={editText} onChange={e => setEditText(e.target.value)} className="field w-full p-3 rounded-xl text-sm min-h-[80px] mb-2 serif-body" />
                 <div className="flex gap-2 justify-end">
                   <button onClick={() => setEditingId(null)} className="btn-ghost px-3 py-1.5 rounded-lg text-xs">Cancel</button>
                   <button onClick={saveEdit} className="btn-primary px-3 py-1.5 rounded-lg text-xs">Save</button>
@@ -123,7 +123,7 @@ export default function ManagePrompts() {
 
       {adding ? (
         <div className="mt-3 p-4 rounded-2xl" style={{ background: 'var(--surface)', border: '1px dashed var(--accent-soft)' }}>
-          <textarea autoFocus value={newText} onChange={e => setNewText(e.target.value)} placeholder="Write your prompt…" className="field w-full p-3 rounded-xl text-sm min-h-[80px] mb-2 serif-body" />
+          <textarea autoFocus id="new-prompt" name="new-prompt" value={newText} onChange={e => setNewText(e.target.value)} placeholder="Write your prompt…" className="field w-full p-3 rounded-xl text-sm min-h-[80px] mb-2 serif-body" />
           <div className="flex gap-2 justify-end">
             <button onClick={() => setAdding(false)} className="btn-ghost px-3 py-1.5 rounded-lg text-xs">Cancel</button>
             <button onClick={addCustom} className="btn-primary px-3 py-1.5 rounded-lg text-xs">Add prompt</button>

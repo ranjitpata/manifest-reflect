@@ -103,6 +103,8 @@ export default function Flow() {
 
           <textarea
             ref={taRef}
+            id={`prompt-${prompt.id}`}
+            name={`prompt-${prompt.id}`}
             value={responses[prompt.id] || ''}
             onChange={(e) => setResponses(r => ({ ...r, [prompt.id]: e.target.value }))}
             placeholder="Write your answer…"
