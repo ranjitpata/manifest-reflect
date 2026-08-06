@@ -219,10 +219,10 @@ const DEFAULT_EVENING_PROMPTS = [
 
 export const DEFAULT_SETTINGS = {
   key: 'singleton',
-  morningTime: '08:00',
-  eveningTime: '21:00',
-  morningSessionSize: 3,
-  eveningSessionSize: 3,
+  morningTime: '07:30',
+  eveningTime: '21:30',
+  morningSessionSize: 1,
+  eveningSessionSize: 1,
   loopCloserEnabled: true,
   theme: 'system',
   onboardingComplete: false
