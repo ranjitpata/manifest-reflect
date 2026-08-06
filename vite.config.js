@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico'],
       manifest: {
-        name: 'Manifest & Reflect',
-        short_name: 'Reflect',
-        description: 'A calm daily journaling practice.',
+        name: 'Dailyseed',
+        short_name: 'Dailyseed',
+        description: 'A calm daily journal prompts.',
         theme_color: '#C97B5C',
         background_color: '#F7F1E8',
         display: 'standalone',

@@ -1,7 +1,7 @@
 import Dexie from 'dexie';
 import { uuid, fisherYates } from '../utils/helpers';
 
-export const db = new Dexie('ManifestReflectDB');
+export const db = new Dexie('DailyseedDB');
 
 db.version(1).stores({
   prompts: 'id, session, enabled, order',

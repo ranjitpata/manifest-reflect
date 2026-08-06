@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Moon, Download, ArrowRight, Bell, FileText } from 'lucide-react';
+import { Sun, Moon, ArrowRight, Bell, FileText } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { db } from '../db';
 import Toggle from '../components/Toggle';
@@ -13,15 +13,15 @@ export default function Settings() {
 
   if (!settings) return null;
 
-  const handleExport = async () => {
-    const [prompts, entries, bags] = await Promise.all([db.prompts.toArray(), db.entries.toArray(), db.shuffleBags.toArray()]);
-    const data = { version: 1, exportedAt: new Date().toISOString(), settings, prompts, entries, shuffleBags: bags };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `manifest-reflect-${todayStr()}.json`; a.click();
-    URL.revokeObjectURL(url);
-  };
+  // const handleExport = async () => {
+  //   const [prompts, entries, bags] = await Promise.all([db.prompts.toArray(), db.entries.toArray(), db.shuffleBags.toArray()]);
+  //   const data = { version: 1, exportedAt: new Date().toISOString(), settings, prompts, entries, shuffleBags: bags };
+  //   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  //   const url = URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url; a.download = `Dailyseed-${todayStr()}.json`; a.click();
+  //   URL.revokeObjectURL(url);
+  // };
 
    const handleDownloadPDF = async () => {
     setIsGeneratingPdf(true);
@@ -47,7 +47,7 @@ export default function Settings() {
       // Title
       doc.setFont('times', 'bold');
       doc.setFontSize(24);
-      doc.text('Manifest & Reflect Journal', margin, y);
+      doc.text('Dailyseed Journal', margin, y);
       y += 10;
 
       // Line break under title
@@ -213,9 +213,9 @@ export default function Settings() {
       <Section title="Your data">
         <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>Everything lives only on this device. Export a copy for safekeeping.</p>
         <div className="flex gap-2">
-          <button onClick={handleExport} className="btn-ghost flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+          {/* <button onClick={handleExport} className="btn-ghost flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-2">
             <Download className="w-4 h-4" strokeWidth={1.5} /> Backup (JSON)
-          </button>
+          </button> */}
           <button onClick={handleDownloadPDF} disabled={isGeneratingPdf} className="btn-primary flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-2">
             <FileText className="w-4 h-4" strokeWidth={1.5} /> {isGeneratingPdf ? 'Generating...' : 'Download (PDF)'}
           </button>
