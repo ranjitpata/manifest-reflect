@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Moon, ArrowRight, Bell, FileText } from 'lucide-react';
+import { Sun, Moon, ArrowRight, Bell, FileText, MessageCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { db } from '../db';
-// import Toggle from '../components/Toggle';
 import { todayStr, isIOS, isStandalone, fmtDate, fmtTime } from '../utils/helpers';
 import { jsPDF } from 'jspdf';
 
@@ -175,13 +174,6 @@ export default function Settings() {
         <StepperRow label="Evening" value={settings.eveningSessionSize} onChange={v => updateSettings({ eveningSessionSize: v })} />
       </Section>
 
-      {/* <Section title="Loop-closing prompt">
-        <div className="flex items-start gap-3">
-          <p className="text-sm leading-relaxed flex-1">Each evening, the first prompt asks whether today felt the way you hoped this morning.</p>
-          <Toggle on={settings.loopCloserEnabled} onChange={v => updateSettings({ loopCloserEnabled: v })} />
-        </div>
-      </Section> */}
-
       <Section title="Manage prompts">
         <ManageLink session="morning" icon={Sun} />
         <ManageLink session="evening" icon={Moon} />
@@ -206,6 +198,19 @@ export default function Settings() {
             <FileText className="w-4 h-4" strokeWidth={1.5} /> {isGeneratingPdf ? 'Generating...' : 'Download (PDF)'}
           </button>
         </div>
+      </Section>
+
+            <Section title="Feedback">
+        <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>Have an idea or found a bug? Let me know.</p>
+        <a 
+          href="https://docs.google.com/forms/d/e/1FAIpQLSe2SBQRo2CFNEBn1GVEomaEKpKHEm2pgi4aNv95_iuJa_RJbA/viewform" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="btn-primary w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2"
+          style={{ textDecoration: 'none' }}
+        >
+          <MessageCircle className="w-4 h-4" strokeWidth={1.5} /> Send Feedback
+        </a>
       </Section>
     </div>
   );
