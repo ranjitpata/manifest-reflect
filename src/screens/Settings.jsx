@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sun, Moon, ArrowRight, Bell, FileText } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { db } from '../db';
-import Toggle from '../components/Toggle';
+// import Toggle from '../components/Toggle';
 import { todayStr, isIOS, isStandalone, fmtDate, fmtTime } from '../utils/helpers';
 import { jsPDF } from 'jspdf';
 
@@ -12,17 +12,6 @@ export default function Settings() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   if (!settings) return null;
-
-  // const handleExport = async () => {
-  //   const [prompts, entries, bags] = await Promise.all([db.prompts.toArray(), db.entries.toArray(), db.shuffleBags.toArray()]);
-  //   const data = { version: 1, exportedAt: new Date().toISOString(), settings, prompts, entries, shuffleBags: bags };
-  //   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  //   const url = URL.createObjectURL(blob);
-  //   const a = document.createElement('a');
-  //   a.href = url; a.download = `Dailyseed-${todayStr()}.json`; a.click();
-  //   URL.revokeObjectURL(url);
-  // };
-
    const handleDownloadPDF = async () => {
     setIsGeneratingPdf(true);
     try {
@@ -186,12 +175,12 @@ export default function Settings() {
         <StepperRow label="Evening" value={settings.eveningSessionSize} onChange={v => updateSettings({ eveningSessionSize: v })} />
       </Section>
 
-      <Section title="Loop-closing prompt">
+      {/* <Section title="Loop-closing prompt">
         <div className="flex items-start gap-3">
           <p className="text-sm leading-relaxed flex-1">Each evening, the first prompt asks whether today felt the way you hoped this morning.</p>
           <Toggle on={settings.loopCloserEnabled} onChange={v => updateSettings({ loopCloserEnabled: v })} />
         </div>
-      </Section>
+      </Section> */}
 
       <Section title="Manage prompts">
         <ManageLink session="morning" icon={Sun} />
@@ -213,9 +202,6 @@ export default function Settings() {
       <Section title="Your data">
         <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>Everything lives only on this device. Export a copy for safekeeping.</p>
         <div className="flex gap-2">
-          {/* <button onClick={handleExport} className="btn-ghost flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-2">
-            <Download className="w-4 h-4" strokeWidth={1.5} /> Backup (JSON)
-          </button> */}
           <button onClick={handleDownloadPDF} disabled={isGeneratingPdf} className="btn-primary flex-1 py-3 rounded-xl text-sm flex items-center justify-center gap-2">
             <FileText className="w-4 h-4" strokeWidth={1.5} /> {isGeneratingPdf ? 'Generating...' : 'Download (PDF)'}
           </button>

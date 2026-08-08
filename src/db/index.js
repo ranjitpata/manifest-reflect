@@ -114,7 +114,6 @@ const DEFAULT_MORNING_PROMPTS = [
 ];
 
 const DEFAULT_EVENING_PROMPTS = [
-  "Did today feel the way you hoped it would this morning?",
   "What happened today that I didn't expect?",
   "What was the single best moment of my day, no matter how small?",
   "What made me smile or laugh today?",
@@ -246,42 +245,80 @@ export async function seedDefaults() {
 }
 
 // Shuffle Bag Logic
+// export async function drawSessionPrompts(session) {
+//   const settings = await db.settings.get('singleton');
+//   const sessionSize = session === 'morning' ? settings.morningSessionSize : settings.eveningSessionSize;
+
+//   let loopCloser = null;
+//   let slotsToFill = sessionSize;
+
+//   if (session === 'evening' && settings.loopCloserEnabled) {
+//     loopCloser = await db.prompts.where('session').equals('evening').and(p => p.isLoopCloser).first();
+//     if (loopCloser && loopCloser.enabled) {
+//       slotsToFill = Math.max(0, sessionSize - 1);
+//     } else {
+//       loopCloser = null;
+//     }
+//   }
+
+//   const allPrompts = await db.prompts.where('session').equals(session).toArray();
+//   const poolIds = allPrompts.filter(p => p.enabled && !p.isLoopCloser).map(p => p.id);
+
+//   if (slotsToFill === 0 || poolIds.length === 0) {
+//     return loopCloser ? [loopCloser] : [];
+//   }
+
+//   const poolVersion = [...poolIds].sort().join('|');
+//   let bag = await db.shuffleBags.get(session);
+//   let remaining = bag?.remainingIds || [];
+//   const bagVersion = bag?.poolVersion || '';
+
+//   if (poolVersion !== bagVersion || remaining.length === 0) {
+//     remaining = fisherYates(poolIds);
+//   }
+
+//   let drawn = remaining.splice(0, slotsToFill);
+//   if (drawn.length < slotsToFill && poolIds.length > 0) {
+//     const reshuffled = fisherYates(poolIds);
+//     const need = slotsToFill - drawn.length;
+//     drawn = [...drawn, ...reshuffled.splice(0, need)];
+//     remaining = reshuffled;
+//   }
+
+//   await db.shuffleBags.put({ session, remainingIds: remaining, poolVersion });
+
+//   const drawnPrompts = (await db.prompts.bulkGet(drawn)).filter(Boolean);
+//   return loopCloser ? [loopCloser, ...drawnPrompts] : drawnPrompts;
+// }
+
+// Shuffle Bag Logic
 export async function drawSessionPrompts(session) {
   const settings = await db.settings.get('singleton');
   const sessionSize = session === 'morning' ? settings.morningSessionSize : settings.eveningSessionSize;
 
-  let loopCloser = null;
-  let slotsToFill = sessionSize;
-
-  if (session === 'evening' && settings.loopCloserEnabled) {
-    loopCloser = await db.prompts.where('session').equals('evening').and(p => p.isLoopCloser).first();
-    if (loopCloser && loopCloser.enabled) {
-      slotsToFill = Math.max(0, sessionSize - 1);
-    } else {
-      loopCloser = null;
-    }
-  }
-
+  // Get ALL enabled prompts for this session (no special treatment for the loop-closer anymore)
   const allPrompts = await db.prompts.where('session').equals(session).toArray();
-  const poolIds = allPrompts.filter(p => p.enabled && !p.isLoopCloser).map(p => p.id);
+  const poolIds = allPrompts.filter(p => p.enabled).map(p => p.id);
 
-  if (slotsToFill === 0 || poolIds.length === 0) {
-    return loopCloser ? [loopCloser] : [];
-  }
+  if (poolIds.length === 0) return [];
 
   const poolVersion = [...poolIds].sort().join('|');
   let bag = await db.shuffleBags.get(session);
   let remaining = bag?.remainingIds || [];
   const bagVersion = bag?.poolVersion || '';
 
+  // Reshuffle if the pool changed or if the bag is empty
   if (poolVersion !== bagVersion || remaining.length === 0) {
     remaining = fisherYates(poolIds);
   }
 
-  let drawn = remaining.splice(0, slotsToFill);
-  if (drawn.length < slotsToFill && poolIds.length > 0) {
+  // Draw the next batch
+  let drawn = remaining.splice(0, sessionSize);
+  
+  // If we didn't have enough to fill the session, reshuffle and top up
+  if (drawn.length < sessionSize && poolIds.length > 0) {
     const reshuffled = fisherYates(poolIds);
-    const need = slotsToFill - drawn.length;
+    const need = sessionSize - drawn.length;
     drawn = [...drawn, ...reshuffled.splice(0, need)];
     remaining = reshuffled;
   }
@@ -289,5 +326,5 @@ export async function drawSessionPrompts(session) {
   await db.shuffleBags.put({ session, remainingIds: remaining, poolVersion });
 
   const drawnPrompts = (await db.prompts.bulkGet(drawn)).filter(Boolean);
-  return loopCloser ? [loopCloser, ...drawnPrompts] : drawnPrompts;
+  return drawnPrompts; // Return all drawn prompts normally
 }
