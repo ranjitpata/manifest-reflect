@@ -22,11 +22,18 @@ export default function Onboarding() {
   const current = steps[step];
   const isLast = step === steps.length - 1;
 
-  const handleAction = async () => {
+    const handleAction = async () => {
     if (isLast && permission === 'default') {
-      const result = await Notification.requestPermission();
-      setPermission(result);
+      try {
+        // iOS often blocks this in the browser, so we wrap it in try/catch
+        const result = await Notification.requestPermission();
+        setPermission(result);
+      } catch{
+        // If iOS blocks it, we just move on instead of freezing
+        console.log("Notification permission blocked on this browser.");
+      }
     }
+    
     if (isLast) {
       await updateSettings({ onboardingComplete: true });
       navigate('/', { replace: true });
